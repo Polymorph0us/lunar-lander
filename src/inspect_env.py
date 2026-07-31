@@ -31,8 +31,7 @@ observation, info = env.reset()
 done = False
 
 while not done:
-    action = 1
-
+    action = env.action_space.sample()  # Random action for demonstration
     observation, reward, terminated, truncated, info = env.step(action)
     print_observation(observation, reward, action)
 

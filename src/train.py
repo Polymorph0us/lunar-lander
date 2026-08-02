@@ -14,10 +14,10 @@ model = PPO(
     verbose=1,
     tensorboard_log="logs/"
 )
-
+TOTAL_TIMESTEPS = 1000000  # Total timesteps for training
 # Train
 model.learn(
-    total_timesteps=100_000
+    total_timesteps=TOTAL_TIMESTEPS
 )
 
 # Save

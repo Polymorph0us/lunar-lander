@@ -47,5 +47,3 @@ class LunarLandingWrapper(gym.Wrapper):
         self.previous_distance = current_distance
 
         return observation, final_reward, terminated, truncated, info
-
-    

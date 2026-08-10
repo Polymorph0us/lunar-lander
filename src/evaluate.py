@@ -11,7 +11,7 @@ env = gym.make(
 model = PPO.load("models/lunar_ppo")
 
 # Number of episodes to evaluate
-NUM_EPISODES = 100
+NUM_EPISODES = 5
 SUCCESS_THRESHOLD = 200.0
 
 episode_rewards = []

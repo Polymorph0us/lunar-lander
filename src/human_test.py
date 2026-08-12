@@ -2,30 +2,39 @@ import gymnasium as gym
 import pygame
 
 from controllers.human_controller import HumanController
+from visualization import LanderUI
 
-NUM_EPISODES=5
+
+NUM_EPISODES = 5
+
+
 env = gym.make(
     "LunarLander-v3",
-    render_mode="human"
+    render_mode="rgb_array"
 )
 
-controller=HumanController()
+controller = HumanController()
+ui = LanderUI()
 
-results=[]
+episode_rewards = []
+
 
 for episode in range(NUM_EPISODES):
-    observation,info = env.reset()
 
-    terminated=False
-    truncated=False
+    observation, info = env.reset()
 
-    total_reward=0.0
-    steps=0
+    terminated = False
+    truncated = False
 
+    total_reward = 0.0
+    step = 0
+
+    # Make sure controller is ready for the new episode
     controller.running = True
 
     while not (terminated or truncated):
 
+        # Keyboard-controlled action
         action = controller.get_action()
 
         if not controller.running:
@@ -36,50 +45,70 @@ for episode in range(NUM_EPISODES):
         )
 
         total_reward += reward
-        steps += 1
+        step += 1
 
-    success = (
-        terminated
-        and observation[6] == 1
-        and observation[7] == 1
-        and abs(observation[4]) < 0.2
-    )
+        frame = env.render()
 
-    results.append({
-        "episode": episode,
-        "reward": total_reward,
-        "steps": steps,
-        "success": success
-    })
+        ui.update(
+            frame=frame,
+            observation=observation,
+            reward=reward,
+            action=action,
+            episode=episode + 1,
+            step=step,
+            done=terminated or truncated,
+            mode="HUMAN"
+        )
+
+        if not ui.running:
+            controller.running = False
+            break
+
+    episode_rewards.append(total_reward)
+
+    if not ui.running:
+        break
 
     print(
-        f"Episode {episode:02d} | "
-        f"Reward: {total_reward:8.2f} | "
-        f"Steps: {steps:3d} | "
-        f"Success: {success}"
+        f"Human Episode {episode + 1}: "
+        f"Reward = {total_reward:.2f}"
     )
 
 
-print("\n========== HUMAN RESULTS ==========")
+# ----------------------------------------
+# Summary
+# ----------------------------------------
 
-successful = sum(
-    result["success"]
-    for result in results
-)
+if episode_rewards:
 
-average_reward = sum(
-    result["reward"]
-    for result in results
-) / len(results)
+    average_reward = (
+        sum(episode_rewards) / len(episode_rewards)
+    )
 
-success_rate = (
-    successful / NUM_EPISODES
-) * 100
+    best_reward = max(episode_rewards)
+    worst_reward = min(episode_rewards)
 
-print(f"Successful landings : {successful}/{NUM_EPISODES}")
-print(f"Success rate        : {success_rate:.1f}%")
-print(f"Average reward      : {average_reward:.2f}")
+    print("\n" + "=" * 40)
+    print("HUMAN CONTROL RESULTS")
+    print("=" * 40)
+
+    print(
+        f"Episodes completed : {len(episode_rewards)}"
+    )
+
+    print(
+        f"Average reward     : {average_reward:.2f}"
+    )
+
+    print(
+        f"Best reward        : {best_reward:.2f}"
+    )
+
+    print(
+        f"Worst reward       : {worst_reward:.2f}"
+    )
 
 
 env.close()
+ui.close()
 pygame.quit()
